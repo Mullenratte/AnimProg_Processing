@@ -16,4 +16,5 @@ abstract class BaseParticle implements IDrawable {
 
   abstract void update();
   abstract void draw();
+  abstract void setVelocity(PVector velocity);
 }
