@@ -24,15 +24,17 @@ class ParticleSystem {
   color yAxisColor = color(0, 255, 0);
 
 
-  ParticleSystem(int poolSize, float duration) {
+  ParticleSystem(int poolSize, int particleSize, float duration) {
     this.poolSize = poolSize;
     this.duration = duration;
+    this.particleSize = particleSize;
   }
 
-  ParticleSystem(int poolSize, float duration, boolean drawGizmo) {
+  ParticleSystem(int poolSize, int particleSize, float duration, boolean drawGizmo) {
     this.poolSize = poolSize;
     this.duration = duration;
     this.drawGizmo = drawGizmo;
+    this.particleSize = particleSize;
   }
 
   void init(int posX, int posY) {
@@ -61,15 +63,6 @@ class ParticleSystem {
     }
 
     isActive = true;
-    /*
-    if (drawGizmo){
-      pushStyle();
-      // x-Handle
-      fill(xAxisColor);
-      rect(
-      popStyle();
-    }
-    */
   }
 
   void draw() {
@@ -96,6 +89,34 @@ class ParticleSystem {
 
     for (BaseParticle pOffScreen : addToPool) {
       addParticleToPool(pOffScreen);
+    }
+
+    if (drawGizmo) {
+      pushStyle();
+      // x-Handle
+      fill(xAxisColor);
+      rect(posX, posY, 25, 3);
+      pushStyle();
+      strokeWeight(2);
+      stroke(xAxisColor);
+      line(posX + 25, posY + 1 + 1.5, posX + 15, posY - 8 + 1.5);
+      line(posX + 25, posY + 1 + 1.5, posX + 15, posY + 8 + 1.5);
+
+      popStyle();
+
+      // y-Handle
+      fill(yAxisColor);
+      rect(posX, posY, 3, -25);
+      pushStyle();
+      strokeWeight(2);
+      stroke(yAxisColor);
+      line(posX + 1.5, posY - 25, posX + -8 + 1.5, posY - 15);
+      line(posX + 1.5, posY - 25, posX + 8 + 1.5, posY - 15);
+
+
+      popStyle();
+
+      popStyle();
     }
   }
 

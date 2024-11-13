@@ -13,7 +13,7 @@ void setup() {
   frameRate(60);
   background(33, 33, 33);
 
-  partSys = new ParticleSystem(poolSize, 15);
+  partSys = new ParticleSystem(poolSize, 7, 15, true);
 }
 
 void draw() {
