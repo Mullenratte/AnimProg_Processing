@@ -1,5 +1,5 @@
 Helper Helper = new Helper();
-int poolSize = 30;
+int poolSize = 50;
 
 ParticleSystem partSys;
 
@@ -13,7 +13,7 @@ void setup() {
   frameRate(60);
   background(33, 33, 33);
 
-  partSys = new ParticleSystem(poolSize, 7, 15, true);
+  partSys = new ParticleSystem(poolSize, 4, .3, false);
 }
 
 void draw() {
@@ -35,4 +35,8 @@ void mousePressed() {
 
 color getFireColor() {
   return color(random(200, 255), random(50, 200), random(0, 50));
+}
+
+color getRandomColor(){
+  return color(random(255), random(255), random(255));
 }

@@ -51,13 +51,13 @@ class ParticleSystem {
       setRandomActiveParticleType();
       switch (activeParticleType) {
       case Particle_Circle:
-        addParticleToPool(new Particle_Circle(particleSize, -500, -500, color(random(255), random(255), random(255))));
+        addParticleToPool(new Particle_Circle(particleSize, -500, -500, getFireColor()));
         break;
       case Particle_Rect:
-        addParticleToPool(new Particle_Rect(particleSize, -500, -500, color(random(255), random(255), random(255))));
+        addParticleToPool(new Particle_Rect(particleSize, -500, -500, getFireColor()));
         break;
       default:
-        addParticleToPool(new Particle_Rect(particleSize, -500, -500, color(random(255), random(255), random(255))));
+        addParticleToPool(new Particle_Rect(particleSize, -500, -500, getFireColor()));
         break;
       }
     }
