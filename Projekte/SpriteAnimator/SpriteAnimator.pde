@@ -1,4 +1,5 @@
 SpritesheetSlicer slicer;
+PImage backgroundImage;
 PImage spritesheet;
 PImage characterSpritesheet;
 PImage[] effect = new PImage[16];
@@ -18,9 +19,8 @@ void setup() {
   noCursor();
   fullScreen();
   frameRate(120);
-  background(33);
-
-
+  backgroundImage = loadImage("4.png");
+  backgroundImage.resize(width, height);
   characterSpritesheet = loadImage("AnimationSheet_Character.png");
   spritesheet = loadImage("smokeFX.png");
 
@@ -44,7 +44,7 @@ void update() {
 
 void draw() {
   update();
-  background(33);
+  background(backgroundImage);
 
   int animationIndex = 8;
   
