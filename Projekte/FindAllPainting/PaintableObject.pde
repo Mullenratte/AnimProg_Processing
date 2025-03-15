@@ -9,6 +9,9 @@ class PaintableObject implements Runnable {
   float boundingBoxWidth;
   float boundingBoxHeight;
 
+  BoundingBox boundingBox;
+
+  // objects with lowest zIndex get drawn first, highest last
   int zIndex;
 
   Animator animator;
@@ -21,7 +24,7 @@ class PaintableObject implements Runnable {
 
     updateBoundingBox();
     this.animator = animator;
-    if (animator instanceof PhysicsAnimator){
+    if (animator != null && animator instanceof PhysicsAnimator) {
       animator.obj = this;
     }
   }
@@ -32,7 +35,7 @@ class PaintableObject implements Runnable {
         currentImg.set(x, y, imgPainted.get(x, y));
       }
       try {
-        Thread.sleep(10);
+        Thread.sleep(5);
       }
       catch(InterruptedException e) {
         println("Thread interrupted");
@@ -86,7 +89,8 @@ class PaintableObject implements Runnable {
     boundingBoxPosition = calculateBBPosition();
     PVector dimensions = calculateBBDimensions();
     boundingBoxWidth = dimensions.x;
-    boundingBoxHeight= dimensions.y;
+    boundingBoxHeight = dimensions.y;
+    this.boundingBox = new BoundingBox(boundingBoxPosition, boundingBoxWidth, boundingBoxHeight);
   }
 
   PVector calculateBBPosition() {
@@ -144,5 +148,9 @@ class PaintableObject implements Runnable {
     }
 
     return false;
+  }
+
+  int getZIndex() {
+    return zIndex;
   }
 }

@@ -1,0 +1,4 @@
+enum AffineAnimationType{
+  TRANSLATE,
+  ROTATE  
+}

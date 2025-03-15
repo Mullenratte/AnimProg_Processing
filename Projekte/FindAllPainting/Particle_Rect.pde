@@ -8,8 +8,6 @@ class Particle_Rect extends BaseParticle {
     posX += velocity.x * deltaTime;
     posY += velocity.y * deltaTime;
     velocity = new PVector(velocity.x * velocityGrowthOverTime, velocity.y * velocityGrowthOverTime);
-        println(velocity.y);
-
   }
 
   void draw() {

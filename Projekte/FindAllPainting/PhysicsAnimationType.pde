@@ -1,0 +1,4 @@
+enum PhysicsAnimationType{
+  BOUNCE,
+  SWAY 
+}

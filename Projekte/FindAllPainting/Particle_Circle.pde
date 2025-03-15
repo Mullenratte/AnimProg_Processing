@@ -1,6 +1,6 @@
-class Particle_Rect extends BaseParticle {
+class Particle_Circle extends BaseParticle {
 
-  Particle_Rect(int size, int posX, int posY, color pColor) {
+  Particle_Circle(int size, int posX, int posY, color pColor) {
     super(size, posX, posY, pColor);
   }
 
@@ -8,15 +8,13 @@ class Particle_Rect extends BaseParticle {
     posX += velocity.x * deltaTime;
     posY += velocity.y * deltaTime;
     velocity = new PVector(velocity.x * velocityGrowthOverTime, velocity.y * velocityGrowthOverTime);
-        println(velocity.y);
-
   }
 
   void draw() {
     pushStyle();
-    rectMode(CENTER);
+    ellipseMode(CENTER);
     fill(pColor);
-    rect(posX, posY, size, size);
+    circle(posX, posY, size);
     popStyle();
   }
 

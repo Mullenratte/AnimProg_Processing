@@ -1,5 +1,6 @@
 class PhysicsAnimator extends Animator {
 
+  // bounce
   PVector startPos = new PVector(0, 0);
   PVector endPos;
   float fallDistance = 250;
@@ -10,32 +11,47 @@ class PhysicsAnimator extends Animator {
 
   boolean keepState;
 
+  PhysicsAnimationType currentAnimationType;
 
-  PhysicsAnimator(PVector position, PImage currentImg, PImage imgPainted, boolean keepState) {
+
+  PhysicsAnimator(PVector position, PImage currentImg, PImage imgPainted, boolean keepState, PhysicsAnimationType type, boolean isLooping) {
     super(position, currentImg, imgPainted);
     //this.startPos = position;
+    currentAnimationType = type;
+    this.isLooping = isLooping;
     this.keepState = keepState;
-    println(this.startPos);
-    endPos = new PVector(startPos.x, startPos.y + fallDistance);
   }
 
 
   void animate() {
     do {
       float progress = 0;
+      startTime = millis() / 1000.0;
+      isAnimating = true;
+      isSwaying = false;
       while (isAnimating) {
         float currentTime = millis() / 1000.0;
         float elapsedTime = currentTime - startTime;
         progress = elapsedTime / animDuration;
-
         if (progress >= 1) {
           progress = 1;
           isAnimating = false;
         }
-
-        position.y = map(easeOutBounce(progress), 0.0, 1.0, (float)startPos.y, (float)endPos.y);
-
-        currentFrameImage = currentImg;
+        switch(currentAnimationType) {
+        case BOUNCE:
+          endPos = new PVector(startPos.x, startPos.y + fallDistance);
+          bounce(progress);
+          break;
+        case SWAY:
+          if (!isSwaying) {
+            isSwaying = true;
+            swayDirX = random(-.5f, .5f);
+            swayDirY = random(-0.1f, 0.1f);
+          }
+          PVector dir = progress <= 0.5f ? new PVector(swayDirX, swayDirY) : new PVector(-swayDirX, swayDirY);
+          sway(dir);
+          break;
+        }
       }
     } while (this.isLooping);
 
@@ -44,13 +60,34 @@ class PhysicsAnimator extends Animator {
     }
   }
 
+  void bounce(float progress) {
+    position.y = map(easeOutBounce(progress), 0.0, 1.0, (float)startPos.y, (float)endPos.y);
+
+    currentFrameImage = currentImg;
+  }
+
+  boolean isSwaying = false;
+  float swaySpeed = 0.0025f;
+  float swayDirX;
+  float swayDirY;
+  float maxSwayDist = 30f;
+  void sway(PVector dir) {
+    if (position.dist(startPos) >= maxSwayDist){
+      dir = startPos.sub(position).normalize();
+    }
+    
+    PVector velocity = dir.mult(swaySpeed);
+    position.add(velocity);
+    
+    // ADD PRINTLN IF WEIRD CHUNKY ANIMATION
+    
+    currentFrameImage = currentImg;
+  }
+
   void playAnimation() {
-    println("once");
     if (isRunning) return;
     currentFrame = 0;
     //startPos = position;
-    startTime = millis() / 1000.0;
-    isAnimating = true;
     Thread t = new Thread(this);
     t.start();
   }
@@ -68,5 +105,15 @@ class PhysicsAnimator extends Animator {
     } else {
       return n1 * (x -= 2.625 / d1) * x + 0.984375;
     }
+  }
+
+  float easeInOutBounce(float x) {
+    return x < 0.5
+      ? (1 - easeOutBounce(1 - 2 * x)) / 2
+      : (1 + easeOutBounce(2 * x - 1)) / 2;
+  }
+
+  PVector getRandomDirectionNormalized() {
+    return new PVector(random(-1, 1), random(-1, 1)).normalize();
   }
 }

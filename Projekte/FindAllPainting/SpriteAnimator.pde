@@ -12,7 +12,7 @@ class SpriteAnimator extends Animator {
       for (int frame = 0; frame < spriteAnimation.length; frame++) {
         currentFrameImage = spriteAnimation[frame];
         try {
-          println("Frame: " + frame);
+          //println("Frame: " + frame);
           Thread.sleep(1000/fps);
         }
         catch(InterruptedException e) {
