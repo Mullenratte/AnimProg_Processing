@@ -30,6 +30,7 @@ class PaintableObject implements Runnable {
   }
 
   void run() {
+    SoundManager.Instance.PlaySoundOnce(SFX.PAINT);
     for (int y = (int)boundingBoxPosition.y; y < (int)boundingBoxPosition.y + boundingBoxHeight; y++) {
       for (int x = (int)boundingBoxPosition.x; x < (int)boundingBoxPosition.x + boundingBoxWidth; x++) {
         currentImg.set(x, y, imgPainted.get(x, y));

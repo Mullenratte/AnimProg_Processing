@@ -27,6 +27,9 @@ float gameTime = 0;
 void setup() {
   frameRate(60);
   fullScreen();
+  
+  // construct Singleton
+  new SoundManager(this);
 
   smokePS = new ParticleSystem(poolSize, 50, 1.6, false);
 
@@ -91,14 +94,12 @@ void setup() {
 
   PImage[] houseParts = new PImage[files.length];
   // Load images into an array
-  println(files.length);
   if (files != null) {
     for (int i = 0; i < files.length; i++) {
       houseParts[i] = loadImage(files[i].getAbsolutePath());
       houseParts[i].resize(houseParts[i].width / globalRescaleFactor, houseParts[i].height / globalRescaleFactor);
       if (i != 8) {
-        pObjects.add(new PaintableObject(30 + i, new StaticAnimator(new PVector(0,0), houseParts[i], houseParts[i])));
-        println(files[i].getAbsolutePath());
+        pObjects.add(new PaintableObject(30 + i, new StaticAnimator(new PVector(0, 0), houseParts[i], houseParts[i])));
       }
       // Ball auf Dach
       else {
