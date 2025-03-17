@@ -2,6 +2,7 @@ class PaintableObject implements Runnable {
   PImage currentImg;
   PImage imgPainted;
 
+  boolean paintCoroutineRunning = false;
   boolean isPainted = false;
 
   PVector position;
@@ -16,12 +17,20 @@ class PaintableObject implements Runnable {
 
   Animator animator;
 
+  int smokeParticlePoolSize = 5;
+
+  ParticleSystem smokePS;
+
+
+
+
+
   PaintableObject(int zIndex, Animator animator) {
     this.currentImg = animator.currentImg;
     this.imgPainted = animator.imgPainted;
     this.position = new PVector(0, 0);
     this.zIndex = zIndex;
-
+    smokePS = new ParticleSystem(smokeParticlePoolSize, 50, 3.5, false);
     updateBoundingBox();
     this.animator = animator;
     if (animator != null && animator instanceof PhysicsAnimator) {
@@ -30,6 +39,7 @@ class PaintableObject implements Runnable {
   }
 
   void run() {
+    smokePS.init(mouseX, mouseY);
     SoundManager.Instance.PlaySoundOnce(SFX.PAINT);
     for (int y = (int)boundingBoxPosition.y; y < (int)boundingBoxPosition.y + boundingBoxHeight; y++) {
       for (int x = (int)boundingBoxPosition.x; x < (int)boundingBoxPosition.x + boundingBoxWidth; x++) {
@@ -65,6 +75,7 @@ class PaintableObject implements Runnable {
     }
 
     drawBoundingBox();
+    smokePS.draw();
   }
 
   void update() {
@@ -73,9 +84,12 @@ class PaintableObject implements Runnable {
     } else {
       Selector.hoveredObjects.remove(this);
     }
+    smokePS.update();
   }
 
   void startPaintCoroutine() {
+    if (paintCoroutineRunning) return;
+    paintCoroutineRunning = true;
     Selector.paintedObjects.add(this);
     Thread t = new Thread(this);
     t.start();

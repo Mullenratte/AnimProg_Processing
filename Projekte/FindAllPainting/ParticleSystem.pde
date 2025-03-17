@@ -3,15 +3,15 @@ class ParticleSystem {
 
   ParticleType activeParticleType;
 
-  float duration = 1;
+  float duration;
   float timer;
 
   int poolSize;
   ArrayList<BaseParticle> particlePool = new ArrayList<BaseParticle>();
   ArrayList<BaseParticle> particles = new ArrayList<BaseParticle>();
 
-  float minParticleVelocity = -150f;
-  float maxParticleVelocity = 150f;
+  float minParticleVelocity = -15f;
+  float maxParticleVelocity = 15f;
 
   int particleSize = 15;
 
@@ -96,31 +96,7 @@ class ParticleSystem {
     }
 
     if (drawGizmo) {
-      pushStyle();
-      // x-Handle
-      fill(xAxisColor);
-      rect(posX, posY, 25, 3);
-      pushStyle();
-      strokeWeight(2);
-      stroke(xAxisColor);
-      line(posX + 25, posY + 1 + 1.5, posX + 15, posY - 8 + 1.5);
-      line(posX + 25, posY + 1 + 1.5, posX + 15, posY + 8 + 1.5);
-
-      popStyle();
-
-      // y-Handle
-      fill(yAxisColor);
-      rect(posX, posY, 3, -25);
-      pushStyle();
-      strokeWeight(2);
-      stroke(yAxisColor);
-      line(posX + 1.5, posY - 25, posX + -8 + 1.5, posY - 15);
-      line(posX + 1.5, posY - 25, posX + 8 + 1.5, posY - 15);
-
-
-      popStyle();
-
-      popStyle();
+      DrawGizmo();
     }
   }
 
@@ -133,6 +109,8 @@ class ParticleSystem {
       p.update();
     }
   }
+
+
 
   // retrieve Particle from object pool and add to active particles
   BaseParticle tryGetParticleFromPool() {
@@ -161,5 +139,33 @@ class ParticleSystem {
   void setRandomActiveParticleType() {
     int rnd = (int)random(0, ParticleType.values().length);
     this.activeParticleType = ParticleType.values()[rnd];
+  }
+
+  void DrawGizmo() {
+    pushStyle();
+    // x-Handle
+    fill(xAxisColor);
+    rect(posX, posY, 25, 3);
+    pushStyle();
+    strokeWeight(2);
+    stroke(xAxisColor);
+    line(posX + 25, posY + 1 + 1.5, posX + 15, posY - 8 + 1.5);
+    line(posX + 25, posY + 1 + 1.5, posX + 15, posY + 8 + 1.5);
+
+    popStyle();
+
+    // y-Handle
+    fill(yAxisColor);
+    rect(posX, posY, 3, -25);
+    pushStyle();
+    strokeWeight(2);
+    stroke(yAxisColor);
+    line(posX + 1.5, posY - 25, posX + -8 + 1.5, posY - 15);
+    line(posX + 1.5, posY - 25, posX + 8 + 1.5, posY - 15);
+
+
+    popStyle();
+
+    popStyle();
   }
 }

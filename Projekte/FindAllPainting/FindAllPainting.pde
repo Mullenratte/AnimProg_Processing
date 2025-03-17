@@ -15,9 +15,6 @@ PImage egg, eggFilled;
 
 
 Helper Helper = new Helper();
-int poolSize = 100;
-
-ParticleSystem smokePS;
 
 float lastTime = 0;
 float deltaTime = 0;
@@ -31,7 +28,7 @@ void setup() {
   // construct Singleton
   new SoundManager(this);
 
-  smokePS = new ParticleSystem(poolSize, 50, 1.6, false);
+
 
   //sheet = loadImage("sheet.png");
   sheetPainted = loadImage("p_sheet.png");
@@ -126,14 +123,12 @@ void draw() {
     obj.draw();
   }
 
-  //smokePS.draw();
-  //smokePS.update();
 }
 
 
 void mousePressed() {
   tryPaintForegroundObject();
-  smokePS.init(mouseX, mouseY);
+
 }
 
 void keyPressed() {

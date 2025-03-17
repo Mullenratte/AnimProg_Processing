@@ -3,7 +3,7 @@ class Particle_Smoke extends BaseParticle {
   ArrayList<PImage[]> sprites;
   PImage selectedSprite;
 
-  Particle_Smoke(int size, int posX, int posY, color pColor) {
+  Particle_Smoke(int size, float posX, float posY, color pColor) {
     super(size, posX, posY, pColor);
 
 
@@ -25,6 +25,9 @@ class Particle_Smoke extends BaseParticle {
     pushStyle();
     imageMode(CENTER);
     image(selectedSprite, posX, posY);
+
+    fill(255, 0, 0);
+    text(""+velocity.x, posX, posY);
     popStyle();
   }
 

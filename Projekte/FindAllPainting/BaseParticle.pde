@@ -1,12 +1,12 @@
 abstract class BaseParticle implements IDrawable {
   int size;
-  int posX;
-  int posY;
+  float posX;
+  float posY;
   PVector velocity;
   color pColor;
   float velocityGrowthOverTime = 1.00;
 
-  BaseParticle(int size, int posX, int posY, color pColor) {
+  BaseParticle(int size, float posX, float posY, color pColor) {
     this.size = size;
     this.posX = posX;
     this.posY = posY;
