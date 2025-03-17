@@ -1,4 +1,13 @@
 import java.util.Comparator;
+import java.io.File;
+import processing.sound.*;
+
+// ---------------------
+// AUDIO
+
+SoundFile backgroundMusic;
+
+// ----------------------
 
 // every image needs to be resized from 3508x2480. Choosing globalRescaleFactor = 4 results in 1/4 = 25% the size. 877x620
 int globalRescaleFactor = 4;
@@ -24,11 +33,19 @@ float gameTime = 0;
 void setup() {
   frameRate(60);
   size(800, 600);
- // fullScreen();
-  
+  // fullScreen();
+
   // construct Singleton
   new SoundManager(this);
 
+  // fill background music playlist, then start
+  File musicDir = new File(dataPath("./Audio/bgm"));
+  File[] musicDirFiles = musicDir.listFiles();
+  for (int i = 0; i < musicDirFiles.length; i++) {
+    SoundManager.Instance.backgroundMusicPlaylist.add(new SoundFile(this, musicDirFiles[i].getAbsolutePath()));
+  }
+  //SoundManager.Instance.StartPlaylist();
+  SoundManager.Instance.StartPlaylistWithRandomSong();
 
 
   //sheet = loadImage("sheet.png");
@@ -113,6 +130,7 @@ void setup() {
 }
 
 void draw() {
+  SoundManager.Instance.update();
   deltaTime = (millis() - lastTime) / 1000;
   lastTime = millis();
   gameTime += deltaTime;
@@ -123,13 +141,11 @@ void draw() {
     obj.update();
     obj.draw();
   }
-
 }
 
 
 void mousePressed() {
   tryPaintForegroundObject();
-
 }
 
 void keyPressed() {
@@ -156,4 +172,8 @@ color getFireColor() {
 
 color getRandomColor() {
   return color(random(255), random(255), random(255));
+}
+
+int getRandomInt(int min, int max) {
+  return (int)random(min, max+1);
 }

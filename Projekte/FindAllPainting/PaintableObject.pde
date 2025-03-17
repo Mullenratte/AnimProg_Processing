@@ -22,7 +22,7 @@ class PaintableObject implements Runnable {
   ParticleSystem smokePS;
 
   // minimal duration before the particle system gets inactive
-  float smokePSMinimalDuration = 1.2f;
+  float smokePSMinimalDuration = 1.5f;
 
   // factor that determines how much longer (or shorter) the PS should exist after the obj has been fully painted. 1.5 = 50% longer than the original duration
   float smokePSLingerFactor = 2.5f;
