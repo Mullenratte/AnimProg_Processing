@@ -13,6 +13,7 @@ class Particle_Smoke extends BaseParticle {
     this.selectedSprite = sprites.get((int)random(sprites.size()))[0];
     //selectedSprite.resize(selectedSprite.width * size, selectedSprite.height * size);
     selectedSprite.resize(size, size);
+    this.velocityGrowthOverTime = 0.93f;
   }
 
   void update() {
@@ -26,8 +27,11 @@ class Particle_Smoke extends BaseParticle {
     imageMode(CENTER);
     image(selectedSprite, posX, posY);
 
-    fill(255, 0, 0);
-    text(""+velocity.x, posX, posY);
+    // debug
+    /*
+     fill(255, 0, 0);
+     text(""+velocity.x, posX, posY);
+     */
     popStyle();
   }
 

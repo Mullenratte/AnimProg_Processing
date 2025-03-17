@@ -10,12 +10,13 @@ class ParticleSystem {
   ArrayList<BaseParticle> particlePool = new ArrayList<BaseParticle>();
   ArrayList<BaseParticle> particles = new ArrayList<BaseParticle>();
 
-  float minParticleVelocity = -15f;
-  float maxParticleVelocity = 15f;
+  float minParticleVelocity = -350f;
+  float maxParticleVelocity = 350f;
 
   int particleSize = 15;
 
   boolean isActive = true;
+
 
   // Gizmos
   boolean drawGizmo = false;
@@ -68,6 +69,8 @@ class ParticleSystem {
 
     isActive = true;
   }
+
+
 
   void draw() {
     if (!isActive) return;

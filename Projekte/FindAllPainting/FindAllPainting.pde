@@ -23,7 +23,8 @@ float gameTime = 0;
 
 void setup() {
   frameRate(60);
-  fullScreen();
+  size(800, 600);
+ // fullScreen();
   
   // construct Singleton
   new SoundManager(this);

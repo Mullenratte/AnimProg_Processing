@@ -17,10 +17,18 @@ class PaintableObject implements Runnable {
 
   Animator animator;
 
-  int smokeParticlePoolSize = 5;
+  int smokeParticlePoolSize = 150;
 
   ParticleSystem smokePS;
 
+  // minimal duration before the particle system gets inactive
+  float smokePSMinimalDuration = 1.2f;
+
+  // factor that determines how much longer (or shorter) the PS should exist after the obj has been fully painted. 1.5 = 50% longer than the original duration
+  float smokePSLingerFactor = 2.5f;
+
+  // time the thread is put to sleep each frame, in milliseconds;
+  int threadSleepTime_ms = 5;
 
 
 
@@ -40,13 +48,19 @@ class PaintableObject implements Runnable {
 
   void run() {
     smokePS.init(mouseX, mouseY);
+
+    // time it takes to fully paint the object (seconds)
+    smokePS.duration = Math.max(smokePSMinimalDuration, smokePSLingerFactor * boundingBoxHeight * threadSleepTime_ms / 1000f);
+    println(smokePS.duration);
     SoundManager.Instance.PlaySoundOnce(SFX.PAINT);
+    int milliseconds = 0;
     for (int y = (int)boundingBoxPosition.y; y < (int)boundingBoxPosition.y + boundingBoxHeight; y++) {
       for (int x = (int)boundingBoxPosition.x; x < (int)boundingBoxPosition.x + boundingBoxWidth; x++) {
         currentImg.set(x, y, imgPainted.get(x, y));
       }
       try {
-        Thread.sleep(5);
+        Thread.sleep(threadSleepTime_ms);
+        milliseconds += threadSleepTime_ms;
       }
       catch(InterruptedException e) {
         println("Thread interrupted");
@@ -64,9 +78,10 @@ class PaintableObject implements Runnable {
       } else {
         image(currentImg, position.x, position.y);
         if (isPainted
-          && mouseOver()
-          && mousePressed
-          && animator != null) {
+          //&& mouseOver()
+          //&& mousePressed
+          && animator != null
+          && !(animator instanceof StaticAnimator)) {
           animator.playAnimation();
         }
       }
