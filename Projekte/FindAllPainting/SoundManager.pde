@@ -21,7 +21,7 @@ static class SoundManager {
     sfxPlaylists = new HashMap<SoundFile[], Integer>();
 
     if (this.parent != null) {
-      globalSoundList.put(SFX.PAINT, new SoundFile(parent, "./Audio/test.wav"));
+      globalSoundList.put(SFX.PAINT, new SoundFile(parent, "./Audio/pencil/test.wav"));
     }
   };
 
@@ -48,8 +48,8 @@ static class SoundManager {
   public void PlaySoundOnce(SoundFile file, float volume) {
     file.play(1f, volume);
   }
-  
-  public void PlayRandomSoundOnce(SoundFile[] fileSelection, float volume){
+
+  public void PlayRandomSoundOnce(SoundFile[] fileSelection, float volume) {
     int i = (int)(Math.random() * fileSelection.length);
     PlaySoundOnce(fileSelection[i], volume);
   }
@@ -59,7 +59,9 @@ static class SoundManager {
   }
 
   public void AddSFXPlaylist(SoundFile[] files) {
-    sfxPlaylists.put(files, 0);
+    if (!sfxPlaylists.containsKey(files)) {
+      sfxPlaylists.put(files, 0);
+    }
   }
 
   private void HandleActiveSFXPlaylists() {
@@ -74,13 +76,11 @@ static class SoundManager {
   }
 
   public void StartPlaylist() {
-    println("started Playlist");
     backgroundMusicPlaylist.get(currentSongIndex).play(musicRate, musicVolume);
     playlistActive = true;
   }
 
   public void StartPlaylistWithRandomSong() {
-    println("started Playlist");
     backgroundMusicPlaylist.get((int)(Math.random() * backgroundMusicPlaylist.size())).play(musicRate, musicVolume);
     playlistActive = true;
   }
@@ -89,7 +89,6 @@ static class SoundManager {
     if (!backgroundMusicPlaylist.get(currentSongIndex).isPlaying()) {
       currentSongIndex = (currentSongIndex + 1) % backgroundMusicPlaylist.size();
       backgroundMusicPlaylist.get(currentSongIndex).play(musicRate, musicVolume);
-      println("next");
     }
   }
 }

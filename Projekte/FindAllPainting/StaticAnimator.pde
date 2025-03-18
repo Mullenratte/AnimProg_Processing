@@ -1,5 +1,6 @@
 class StaticAnimator extends Animator{
 
+  
   StaticAnimator(PVector position, PImage currentImg, PImage imgPainted){
     super(position, currentImg, imgPainted);
   }

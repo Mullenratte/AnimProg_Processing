@@ -6,6 +6,7 @@ class PaintableObject implements Runnable {
 
   boolean paintCoroutineRunning = false;
   boolean isPainted = false;
+  boolean canSelect = true;
 
   PVector position;
   PVector boundingBoxPosition;
@@ -35,14 +36,13 @@ class PaintableObject implements Runnable {
   SoundFile[] onPaintedSFX;
   boolean onPaintedSFXLooping;
 
-
   PaintableObject(int zIndex, Animator animator) {
     this.currentImg = animator.currentImg;
     this.imgPainted = animator.imgPainted;
     this.position = new PVector(0, 0);
     this.zIndex = zIndex;
     smokePS = new ParticleSystem(0, 50, 3.5, false);
-    smokePS.setActiveParticleType(ParticleType.Particle_Smoke);
+    //smokePS.setActiveParticleType(ParticleType.Particle_Smoke);
     updateBoundingBox();
     this.animator = animator;
     if (animator != null && animator instanceof PhysicsAnimator) {
@@ -51,16 +51,16 @@ class PaintableObject implements Runnable {
   }
 
   void run() {
-    smokePS.init(mouseX, mouseY);
-
+    //smokePS.init(mouseX, mouseY);
     // time it takes to fully paint the object (seconds)
-    smokePS.duration = Math.max(smokePSMinimalDuration, smokePSLingerFactor * boundingBoxHeight * threadSleepTime_ms / 1000f);
+    //smokePS.duration = Math.max(smokePSMinimalDuration, smokePSLingerFactor * boundingBoxHeight * threadSleepTime_ms / 1000f);
     SoundManager.Instance.PlayRandomSoundOnce(FindAllPainting.pencilSounds, 0.8f);
     int milliseconds = 0;
     for (int y = (int)boundingBoxPosition.y; y < (int)boundingBoxPosition.y + boundingBoxHeight; y++) {
       for (int x = (int)boundingBoxPosition.x; x < (int)boundingBoxPosition.x + boundingBoxWidth; x++) {
         currentImg.set(x, y, imgPainted.get(x, y));
       }
+
       try {
         Thread.sleep(threadSleepTime_ms);
         milliseconds += threadSleepTime_ms;
@@ -73,15 +73,9 @@ class PaintableObject implements Runnable {
       FindAllPainting.paintedObjects++;
     }
     isPainted = true;
-    if (onPaintedSFX != null) {
-      if (onPaintedSFXLooping) {
-        SoundManager.Instance.AddSFXPlaylist(onPaintedSFX);
-      } else {
-        SoundManager.Instance.PlaySoundOnce(onPaintedSFX[0], 0.3f);
-      }
-    }
+    canSelect = false;
+    tryPlayOnPaintedSFX();
   }
-
 
 
   void draw() {
@@ -89,6 +83,7 @@ class PaintableObject implements Runnable {
       if (animator.isRunning) {
         animator.draw();
       } else {
+        // HIER
         image(currentImg, position.x, position.y);
         if (isPainted
           //&& mouseOver()
@@ -102,14 +97,25 @@ class PaintableObject implements Runnable {
       image(currentImg, position.x, position.y);
     }
 
-    //if (mouseOver()) drawBoundingBox();
+    if (mouseOver()) drawBoundingBox();
     smokePS.draw();
   }
 
   void update() {
-    if (!isPainted && mouseOver() && !Selector.paintedObjects.contains(this)) {
+    if (!Selector.hoveredObjects.contains(this)
+      && !isPainted
+      && mouseOver()
+      && !Selector.paintedObjects.contains(this)
+      ||
+      !Selector.hoveredObjects.contains(this)
+      && FindAllPainting.wholeImagePainted
+      && mouseOver()) {
+      //println("added " + this.zIndex);
       Selector.hoveredObjects.add(this);
-    } else {
+    }
+    if (Selector.hoveredObjects.contains(this)
+      && (!mouseOver()    ||    isPainted && !FindAllPainting.wholeImagePainted)) {
+      //println("removed " + this.zIndex);
       Selector.hoveredObjects.remove(this);
     }
 
@@ -118,11 +124,22 @@ class PaintableObject implements Runnable {
   }
 
   void startPaintCoroutine() {
-    if (paintCoroutineRunning) return;
+    if (paintCoroutineRunning || isPainted) return;
     paintCoroutineRunning = true;
     Selector.paintedObjects.add(this);
     Thread t = new Thread(this);
     t.start();
+  }
+
+
+  void tryPlayOnPaintedSFX() {
+    if (onPaintedSFX != null) {
+      if (onPaintedSFXLooping) {
+        SoundManager.Instance.AddSFXPlaylist(onPaintedSFX);
+      } else {
+        SoundManager.Instance.PlaySoundOnce(onPaintedSFX[0], 0.3f);
+      }
+    }
   }
 
   void setPosition(PVector newPosition) {
@@ -177,7 +194,7 @@ class PaintableObject implements Runnable {
   void drawBoundingBox() {
     pushStyle();
     stroke(0, 255, 0);
-    line(boundingBoxPosition.x, boundingBoxPosition.y, boundingBoxPosition.x + boundingBoxWidth, boundingBoxPosition.y);
+    line(boundingBox.position.x, boundingBox.position.y, boundingBox.position.x + boundingBoxWidth, boundingBox.position.y);
     line(boundingBoxPosition.x, boundingBoxPosition.y, boundingBoxPosition.x, boundingBoxPosition.y + boundingBoxHeight);
     line(boundingBoxPosition.x + boundingBoxWidth, boundingBoxPosition.y, boundingBoxPosition.x + boundingBoxWidth, boundingBoxPosition.y + boundingBoxHeight);
     line(boundingBoxPosition.x, boundingBoxPosition.y + boundingBoxHeight, boundingBoxPosition.x + boundingBoxWidth, boundingBoxPosition.y + boundingBoxHeight);

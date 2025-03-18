@@ -71,16 +71,17 @@ class PhysicsAnimator extends Animator {
   float swayDirX;
   float swayDirY;
   float maxSwayDist = 30f;
+
   void sway(PVector dir) {
-    if (position.dist(startPos) >= maxSwayDist){
+    if (position.dist(startPos) >= maxSwayDist) {
       dir = startPos.sub(position).normalize();
     }
-    
+
     PVector velocity = dir.mult(swaySpeed);
     position.add(velocity);
-    
+
     // ADD PRINTLN IF WEIRD CHUNKY ANIMATION
-    
+
     currentFrameImage = currentImg;
   }
 

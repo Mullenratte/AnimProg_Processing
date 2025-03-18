@@ -46,12 +46,12 @@ class AffineAnimator extends Animator {
     }
   }
 
-  float pixelsPerSecond = 150f;
+  float pixelsPerSecond = 50f;
   void translate(PVector dir) {
     position.add(dir);
     if (isScrolling) {
       if (position.x >= width) {
-        position.x = -width;
+        position.x = -width / 2;
       }
       if (position.y >= height) {
         position.y = -height;

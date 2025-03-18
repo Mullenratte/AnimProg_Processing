@@ -8,13 +8,14 @@ import processing.sound.*;
 SoundFile backgroundMusic;
 static SoundFile[] pencilSounds;
 SoundFile[] birdSounds;
+SoundFile[] leafSounds;
 
 // ----------------------
 
 // every image needs to be resized from 3508x2480. Choosing globalRescaleFactor = 4 results in 1/4 = 25% the size. 877x620
 int globalRescaleFactor = 1;
 
-PImage imageFrame;
+PGraphics imageFrame;
 
 PImage sheetPainted, animations;
 ArrayList<PImage[]> sheetSliced, sheetPaintedSliced, animationsSliced;
@@ -25,7 +26,6 @@ PaintableObject testObject;
 PaintableObject testObject2;
 
 PImage egg, eggFilled;
-
 
 
 Helper Helper = new Helper();
@@ -39,10 +39,23 @@ PaintableObject backgroundObj;
 static int paintedObjects = 0;
 int paintableObjectsTotal;
 
+PImage pencilAnimSheet;
+ArrayList<PImage[]> pencilAnimSheetSliced;
+SpriteAnimator pencilAnim;
+boolean pencilActive;
+float pencil_currentAnimFrame = 0;
+float animFPS = 15f;
+
+static boolean wholeImagePainted;
+
+PGraphics pg;
 
 void setup() {
   frameRate(60);
   size(1280, 905);
+  noCursor();
+
+
   // ----- AUDIO ------
   // construct Singleton
   new SoundManager(this);
@@ -57,7 +70,7 @@ void setup() {
 
   pencilSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/pencil");
   birdSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/birds");
-
+  leafSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/leaves");
   // ----- AUDIO END ------
 
   // ----- LOAD IMAGES ------
@@ -65,46 +78,21 @@ void setup() {
   PImage f_bg = loadImage("Background_filled.PNG");
 
   backgroundObj = new PaintableObject(-1, new StaticAnimator(new PVector(0, 0), uf_bg, f_bg));
-  imageFrame = loadImage("Rahmen.PNG");
+
+  imageFrame = createGraphics(1280, 905);
+  imageFrame.beginDraw();
+  imageFrame.image(loadImage("Rahmen.PNG"), 0, 0);
+  imageFrame.endDraw();
 
   //sheetPainted = loadImage("p_sheet.png");
   //animations = loadImage("guy_anim_walk.png");
-  //slicer = new SpritesheetSlicer(sheetPainted, 400, 400);
-  //slicer.SetSpritesheet(sheetPainted);
-  //sheetPaintedSliced = slicer.GetSlicedRows();
-  //sheetSliced = slicer.GetSlicedRows();
-
-  //for (PImage[] array : sheetSliced) {
-  //  array[0].filter(THRESHOLD, 0.05);
-  //}
-
-  //slicer.SetSpritesheet(animations);
-  //animationsSliced = slicer.GetSlicedRows();
-
-  //for (int i = 0; i < sheetSliced.size(); i++) {
-  //  PImage defaultImg = sheetSliced.get(i)[0];
-  //  PImage paintedImg = sheetPaintedSliced.get(i)[0];
-
-  //  // character
-  //  if (i == 0) {
-  //    SpriteAnimator animator = new SpriteAnimator(new PVector(0, 0), defaultImg, paintedImg, animationsSliced.get(i));
-  //    animator.isLooping = true;
-  //    pObjects.add(new PaintableObject(i, animator));
-  //  }
-  //  // cloud
-  //  else if (i == 2) {
-  //    pObjects.add(new PaintableObject(10, new AffineAnimator(new PVector(0, 0), defaultImg, paintedImg, true, AffineAnimationType.TRANSLATE_RIGHT)));
-  //  } else {
-  //    pObjects.add(new PaintableObject(i, new StaticAnimator(new PVector(0, 0), defaultImg, paintedImg)));
-  //  }
-  //}
-
-  //// egg
-  //egg = loadImage("egg.png");
-  //eggFilled = loadImage("egg_f.png");
-
-  //pObjects.add(new PaintableObject(10, new PhysicsAnimator(new PVector(0, 0), egg, eggFilled, true, PhysicsAnimationType.BOUNCE, false)));
-
+  pencilAnimSheet = loadImage("PencilAnimation.png");
+  slicer = new SpritesheetSlicer(pencilAnimSheet, 1280, 905);
+  pencilAnimSheetSliced = slicer.GetSlicedRows();
+  for (int i = 0; i < pencilAnimSheetSliced.get(0).length; i++) {
+    pencilAnimSheetSliced.get(0)[i].resize(1280 / 4, 905 / 4);
+  }
+  pencilAnim = new SpriteAnimator(new PVector(mouseX, mouseY), pencilAnimSheetSliced.get(0)[0], pencilAnimSheetSliced.get(0)[0], pencilAnimSheetSliced.get(0));
 
   // house
   File directory = new File(dataPath("./Weiss"));
@@ -150,10 +138,23 @@ void setup() {
         PVector chimneyPosition = new PVector (chimneyObject.boundingBox.position.x + chimneyObject.boundingBox.boxWidth / 2, chimneyObject.boundingBox.position.y - 5);
         chimneyObject.animator = new ParticleSystemAnimator(chimneyPosition, unfilledImages[i], unfilledImages[i], chimneySmokePS);
 
-        chimneyObject.onPaintedSFX = new SoundFile[]{new SoundFile(this, "./Audio/Chimney.wav")};
+        chimneyObject.setOnPaintedSFX(new SoundFile[]{new SoundFile(this, "./Audio/Chimney.wav")}, true);
         pObjects.add(chimneyObject);
         break;
+      case 31:
+        obj = new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i]));
+        obj.setOnPaintedSFX(new SoundFile[]{new SoundFile(this, "./Audio/well/drop.wav")}, false);
+        pObjects.add(obj);
+        break;
       default:
+        // leaves
+        //if (zIndex != 7 && zIndex >= 5 && zIndex <= 18) {
+        //  obj = new PaintableObject(zIndex, new PhysicsAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i], true, PhysicsAnimationType.SWAY, true));
+        //  obj.setOnPaintedSFX(leafSounds, false);
+        //  pObjects.add(obj);
+        //} else {
+        //  pObjects.add(new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i])));
+        //}
         pObjects.add(new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i])));
       }
     }
@@ -164,6 +165,11 @@ void setup() {
   // sort all pObjects based on z Index (after that, ArrayList starts with lowest zIndex)
   pObjects.sort(Comparator.comparingInt(PaintableObject::getZIndex));
   paintableObjectsTotal = pObjects.size();
+
+  //debug
+  //for (PaintableObject o : pObjects) {
+  //  o.startPaintCoroutine();
+  //}
 }
 
 void draw() {
@@ -177,16 +183,31 @@ void draw() {
   gameTime += deltaTime;
 
 
+  if (paintedObjects >= paintableObjectsTotal) {
+    wholeImagePainted = true;
+    backgroundObj.startPaintCoroutine();
+  }
+
   for (PaintableObject obj : pObjects) {
     obj.update();
     obj.draw();
   }
 
-  if (paintedObjects >= paintableObjectsTotal) {
-    backgroundObj.startPaintCoroutine();
-  }
+
 
   image(imageFrame, 0, 0);
+
+  if (pencilActive) {
+    pencil_currentAnimFrame += deltaTime * animFPS;
+    if (pencil_currentAnimFrame >= pencilAnimSheetSliced.get(0).length) {
+      pencilActive = false;
+      pencil_currentAnimFrame = 0;
+    }
+    image(pencilAnimSheetSliced.get(0)[(int)pencil_currentAnimFrame], mouseX - 99, mouseY - 170);
+    //pencil_currentAnimFrame = (pencil_currentAnimFrame + 1) % pencilAnimSheetSliced.get(0).length;
+  } else {
+    image(pencilAnimSheetSliced.get(0)[0], mouseX - 99, mouseY - 170);
+  }
 }
 
 
@@ -200,7 +221,7 @@ void keyPressed() {
 void tryPaintForegroundObject() {
   PaintableObject highestZObj = null;
   int highestZ = -1;
-  for (PaintableObject obj : Selector.GetInstance().hoveredObjects) {
+  for (PaintableObject obj : Selector.hoveredObjects) {
     if (obj.zIndex > highestZ) {
       highestZ = obj.zIndex;
       highestZObj = obj;
@@ -209,6 +230,14 @@ void tryPaintForegroundObject() {
 
   if (highestZObj != null) {
     highestZObj.startPaintCoroutine();
+    if (!highestZObj.isPainted) {
+      pencilActive = true;
+    }
+
+    if (wholeImagePainted) {
+      println(highestZObj.zIndex);
+      highestZObj.tryPlayOnPaintedSFX();
+    }
   }
 }
 
