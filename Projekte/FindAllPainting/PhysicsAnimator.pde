@@ -3,7 +3,7 @@ class PhysicsAnimator extends Animator {
   // bounce
   PVector startPos = new PVector(0, 0);
   PVector endPos;
-  float fallDistance = 250;
+  float fallDistance = 350;
 
   boolean isAnimating;
   float startTime;

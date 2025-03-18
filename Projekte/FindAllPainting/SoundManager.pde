@@ -8,12 +8,17 @@ static class SoundManager {
   HashMap<SFX, SoundFile> globalSoundList;
 
   ArrayList<SoundFile> backgroundMusicPlaylist;
+  HashMap<SoundFile[], Integer> sfxPlaylists;
   boolean playlistActive = false;
   int currentSongIndex = 0;
+
+  float musicVolume = 0.25f;
+  float musicRate = 1f;
 
   private SoundManager() {
     globalSoundList = new HashMap<SFX, SoundFile>();
     backgroundMusicPlaylist = new ArrayList<SoundFile>();
+    sfxPlaylists = new HashMap<SoundFile[], Integer>();
 
     if (this.parent != null) {
       globalSoundList.put(SFX.PAINT, new SoundFile(parent, "./Audio/test.wav"));
@@ -32,30 +37,54 @@ static class SoundManager {
 
   void update() {
     HandleNextSong();
+
+    HandleActiveSFXPlaylists();
   }
 
-  public void PlaySoundOnce(SFX soundListKey) {
-    globalSoundList.get(soundListKey).play();
+  public void PlaySoundOnce(SFX soundListKey, float volume) {
+    PlaySoundOnce(globalSoundList.get(soundListKey), volume);
   }
 
-  public void PlayContinuously(SoundFile file) {
-    file.loop();
+  public void PlaySoundOnce(SoundFile file, float volume) {
+    file.play(1f, volume);
+  }
+
+  public void PlayContinuously(SoundFile file, float volume) {
+    file.loop(1f, volume);
+  }
+
+  public void AddSFXPlaylist(SoundFile[] files) {
+    sfxPlaylists.put(files, 0);
+  }
+
+  private void HandleActiveSFXPlaylists() {
+    for (SoundFile[] playlist : sfxPlaylists.keySet()) {
+      Integer currentSongIndex = sfxPlaylists.get(playlist);
+      if (!playlist[currentSongIndex].isPlaying()) {
+        currentSongIndex = (sfxPlaylists.get(playlist) + 1) % playlist.length;
+        sfxPlaylists.put(playlist, currentSongIndex);
+        playlist[currentSongIndex].play(0.5f);
+      }
+    }
   }
 
   public void StartPlaylist() {
-    backgroundMusicPlaylist.get(currentSongIndex).play();
+    println("started Playlist");
+    backgroundMusicPlaylist.get(currentSongIndex).play(musicRate, musicVolume);
     playlistActive = true;
   }
 
   public void StartPlaylistWithRandomSong() {
-    backgroundMusicPlaylist.get((int)(Math.random() * backgroundMusicPlaylist.size())).play();
+    println("started Playlist");
+    backgroundMusicPlaylist.get((int)(Math.random() * backgroundMusicPlaylist.size())).play(musicRate, musicVolume);
     playlistActive = true;
   }
 
   private void HandleNextSong() {
     if (!backgroundMusicPlaylist.get(currentSongIndex).isPlaying()) {
       currentSongIndex = (currentSongIndex + 1) % backgroundMusicPlaylist.size();
-      backgroundMusicPlaylist.get(currentSongIndex).play();
+      backgroundMusicPlaylist.get(currentSongIndex).play(musicRate, musicVolume);
+      println("next");
     }
   }
 }

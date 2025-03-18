@@ -6,11 +6,15 @@ import processing.sound.*;
 // AUDIO
 
 SoundFile backgroundMusic;
+SoundFile[] birdSounds;
 
 // ----------------------
 
 // every image needs to be resized from 3508x2480. Choosing globalRescaleFactor = 4 results in 1/4 = 25% the size. 877x620
-int globalRescaleFactor = 4;
+int globalRescaleFactor = 1;
+
+PImage imageFrame;
+
 PImage sheetPainted, animations;
 ArrayList<PImage[]> sheetSliced, sheetPaintedSliced, animationsSliced;
 SpritesheetSlicer slicer;
@@ -29,96 +33,126 @@ float lastTime = 0;
 float deltaTime = 0;
 float gameTime = 0;
 
+PaintableObject backgroundObj;
+
+static int paintedObjects = 0;
+int paintableObjectsTotal;
+
 
 void setup() {
   frameRate(60);
-  size(800, 600);
-  // fullScreen();
-
+  size(1280, 905);
+  // ----- AUDIO ------
   // construct Singleton
   new SoundManager(this);
 
   // fill background music playlist, then start
-  File musicDir = new File(dataPath("./Audio/bgm"));
-  File[] musicDirFiles = musicDir.listFiles();
+  File[] musicDirFiles = Helper.loadFilesFromDirectory("./Audio/bgm");
   for (int i = 0; i < musicDirFiles.length; i++) {
     SoundManager.Instance.backgroundMusicPlaylist.add(new SoundFile(this, musicDirFiles[i].getAbsolutePath()));
   }
   //SoundManager.Instance.StartPlaylist();
   SoundManager.Instance.StartPlaylistWithRandomSong();
 
+  SoundFile[] birdSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/birds");
 
-  //sheet = loadImage("sheet.png");
-  sheetPainted = loadImage("p_sheet.png");
-  animations = loadImage("guy_anim_walk.png");
-  slicer = new SpritesheetSlicer(sheetPainted, 400, 400);
+  // ----- AUDIO END ------
+
+  // ----- LOAD IMAGES ------
+  PImage uf_bg = loadImage("Background_unfilled.PNG");
+  PImage f_bg = loadImage("Background_filled.PNG");
+
+  backgroundObj = new PaintableObject(-1, new StaticAnimator(new PVector(0, 0), uf_bg, f_bg));
+  imageFrame = loadImage("Rahmen.PNG");
+
+  //sheetPainted = loadImage("p_sheet.png");
+  //animations = loadImage("guy_anim_walk.png");
+  //slicer = new SpritesheetSlicer(sheetPainted, 400, 400);
+  //slicer.SetSpritesheet(sheetPainted);
+  //sheetPaintedSliced = slicer.GetSlicedRows();
   //sheetSliced = slicer.GetSlicedRows();
-  slicer.SetSpritesheet(sheetPainted);
-  sheetPaintedSliced = slicer.GetSlicedRows();
-  sheetSliced = slicer.GetSlicedRows();
 
-  for (PImage[] array : sheetSliced) {
-    array[0].filter(THRESHOLD, 0.05);
-  }
+  //for (PImage[] array : sheetSliced) {
+  //  array[0].filter(THRESHOLD, 0.05);
+  //}
 
-  slicer.SetSpritesheet(animations);
-  animationsSliced = slicer.GetSlicedRows();
+  //slicer.SetSpritesheet(animations);
+  //animationsSliced = slicer.GetSlicedRows();
 
-  for (int i = 0; i < sheetSliced.size(); i++) {
-    PImage defaultImg = sheetSliced.get(i)[0];
-    PImage paintedImg = sheetPaintedSliced.get(i)[0];
+  //for (int i = 0; i < sheetSliced.size(); i++) {
+  //  PImage defaultImg = sheetSliced.get(i)[0];
+  //  PImage paintedImg = sheetPaintedSliced.get(i)[0];
 
-    // character
-    if (i == 0) {
-      SpriteAnimator animator = new SpriteAnimator(new PVector(0, 0), defaultImg, paintedImg, animationsSliced.get(i));
-      animator.isLooping = true;
-      pObjects.add(new PaintableObject(i, animator));
-    }
-    // cloud
-    else if (i == 2) {
-      pObjects.add(new PaintableObject(10, new AffineAnimator(new PVector(0, 0), defaultImg, paintedImg, true, AffineAnimationType.TRANSLATE)));
-    } else {
-      pObjects.add(new PaintableObject(i, new StaticAnimator(new PVector(0, 0), defaultImg, paintedImg)));
-    }
-  }
-
-  // egg
-  egg = loadImage("egg.png");
-  eggFilled = loadImage("egg_f.png");
-
-  pObjects.add(new PaintableObject(10, new PhysicsAnimator(new PVector(0, 0), egg, eggFilled, true, PhysicsAnimationType.BOUNCE, false)));
-
-
-  // tree
-  //PImage treeSheet = loadImage("tree.png");
-  //slicer.SetSpritesheet(treeSheet);
-  //ArrayList<PImage[]> treeLayers = slicer.GetSlicedRows();
-  //for (int i = 0; i < treeLayers.size(); i++) {
-  //  PImage layerImg = treeLayers.get(i)[0];
+  //  // character
   //  if (i == 0) {
-  //    pObjects.add(new PaintableObject(10, new StaticAnimator(new PVector(0, 0), layerImg, layerImg)));
+  //    SpriteAnimator animator = new SpriteAnimator(new PVector(0, 0), defaultImg, paintedImg, animationsSliced.get(i));
+  //    animator.isLooping = true;
+  //    pObjects.add(new PaintableObject(i, animator));
+  //  }
+  //  // cloud
+  //  else if (i == 2) {
+  //    pObjects.add(new PaintableObject(10, new AffineAnimator(new PVector(0, 0), defaultImg, paintedImg, true, AffineAnimationType.TRANSLATE_RIGHT)));
   //  } else {
-  //    pObjects.add(new PaintableObject(10, new PhysicsAnimator(new PVector(0, 0), layerImg, layerImg, true, PhysicsAnimationType.SWAY, true)));
+  //    pObjects.add(new PaintableObject(i, new StaticAnimator(new PVector(0, 0), defaultImg, paintedImg)));
   //  }
   //}
 
+  //// egg
+  //egg = loadImage("egg.png");
+  //eggFilled = loadImage("egg_f.png");
+
+  //pObjects.add(new PaintableObject(10, new PhysicsAnimator(new PVector(0, 0), egg, eggFilled, true, PhysicsAnimationType.BOUNCE, false)));
+
 
   // house
-  File directory = new File(dataPath("./Haus"));
-  File[] files = directory.listFiles((d, name) -> name.endsWith(".PNG"));
+  File directory = new File(dataPath("./Weiss"));
+  File[] u_files = directory.listFiles((d, name) -> name.endsWith(".PNG"));
 
-  PImage[] houseParts = new PImage[files.length];
-  // Load images into an array
-  if (files != null) {
-    for (int i = 0; i < files.length; i++) {
-      houseParts[i] = loadImage(files[i].getAbsolutePath());
-      houseParts[i].resize(houseParts[i].width / globalRescaleFactor, houseParts[i].height / globalRescaleFactor);
-      if (i != 8) {
-        pObjects.add(new PaintableObject(30 + i, new StaticAnimator(new PVector(0, 0), houseParts[i], houseParts[i])));
-      }
-      // Ball auf Dach
-      else {
-        pObjects.add(new PaintableObject(30 + i, new PhysicsAnimator(new PVector(0, 0), houseParts[i], houseParts[i], true, PhysicsAnimationType.BOUNCE, false)));
+  directory = new File(dataPath("./Farbe"));
+  File[] f_files = directory.listFiles((d, name) -> name.endsWith(".PNG"));
+  if (u_files != null && f_files != null) {
+    PImage[] unfilledImages = new PImage[u_files.length];
+    PImage[] filledImages = new PImage[u_files.length];
+
+    // Load images into an array
+    for (int i = 0; i < u_files.length; i++) {
+      String absPath = u_files[i].getAbsolutePath();
+      unfilledImages[i] = loadImage(absPath);
+      absPath = f_files[i].getAbsolutePath();
+      filledImages[i] = loadImage(absPath);
+      int zIndex = Integer.parseInt(u_files[i].getName().substring(0, 2));
+      unfilledImages[i].resize(unfilledImages[i].width / globalRescaleFactor, unfilledImages[i].height / globalRescaleFactor);
+      filledImages[i].resize(filledImages[i].width / globalRescaleFactor, filledImages[i].height / globalRescaleFactor);
+
+      switch (zIndex) {
+        // Wolken
+      case 1:
+        pObjects.add(new PaintableObject(zIndex, new AffineAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i], true, AffineAnimationType.TRANSLATE_RIGHT)));
+
+        // großer Baum links
+      case 13:
+        PaintableObject obj = new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i]));
+        obj.setOnPaintedSFX(birdSounds, true);
+        pObjects.add(obj);
+
+        break;
+        // Ball auf Dach
+      case 28:
+        pObjects.add(new PaintableObject(zIndex, new PhysicsAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i], true, PhysicsAnimationType.BOUNCE, false)));
+        break;
+        // Schornstein
+      case 29:
+        ParticleSystem chimneySmokePS = new ParticleSystem(500, 25, -1);
+        chimneySmokePS.setActiveParticleType(ParticleType.Particle_Smoke);
+        PaintableObject chimneyObject = new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i]));
+        PVector chimneyPosition = new PVector (chimneyObject.boundingBox.position.x + chimneyObject.boundingBox.boxWidth / 2, chimneyObject.boundingBox.position.y - 5);
+        chimneyObject.animator = new ParticleSystemAnimator(chimneyPosition, unfilledImages[i], unfilledImages[i], chimneySmokePS);
+
+        chimneyObject.onPaintedSFX = new SoundFile[]{new SoundFile(this, "./Audio/Chimney.wav")};
+        pObjects.add(chimneyObject);
+        break;
+      default:
+        pObjects.add(new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i])));
       }
     }
   }
@@ -127,20 +161,30 @@ void setup() {
 
   // sort all pObjects based on z Index (after that, ArrayList starts with lowest zIndex)
   pObjects.sort(Comparator.comparingInt(PaintableObject::getZIndex));
+  paintableObjectsTotal = pObjects.size();
 }
 
 void draw() {
+  background(255);
+  backgroundObj.update();
+  backgroundObj.draw();
+  //background(153, 206, 255);
   SoundManager.Instance.update();
   deltaTime = (millis() - lastTime) / 1000;
   lastTime = millis();
   gameTime += deltaTime;
 
-  background(255);
 
   for (PaintableObject obj : pObjects) {
     obj.update();
     obj.draw();
   }
+
+  if (paintedObjects >= paintableObjectsTotal) {
+    backgroundObj.startPaintCoroutine();
+  }
+
+  image(imageFrame, 0, 0);
 }
 
 

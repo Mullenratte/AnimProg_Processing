@@ -1,4 +1,5 @@
 enum AffineAnimationType{
-  TRANSLATE,
+  TRANSLATE_UP,
+  TRANSLATE_RIGHT,
   ROTATE  
 }

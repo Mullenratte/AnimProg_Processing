@@ -29,6 +29,7 @@ class ParticleSystem {
     this.poolSize = poolSize;
     this.duration = duration;
     this.particleSize = particleSize;
+    setRandomActiveParticleType();
   }
 
   ParticleSystem(int poolSize, int particleSize, float duration, boolean drawGizmo) {
@@ -36,6 +37,7 @@ class ParticleSystem {
     this.duration = duration;
     this.drawGizmo = drawGizmo;
     this.particleSize = particleSize;
+    setRandomActiveParticleType();
   }
 
   void init(int posX, int posY) {
@@ -49,8 +51,7 @@ class ParticleSystem {
     particles.clear();
 
     for (int i = 0; i < poolSize; i++) {
-      //setRandomActiveParticleType();
-      setActiveParticleType(ParticleType.Particle_Smoke);
+
       switch (activeParticleType) {
       case Particle_Circle:
         addParticleToPool(new Particle_Circle(particleSize, -500, -500, getFireColor()));
@@ -59,7 +60,9 @@ class ParticleSystem {
         addParticleToPool(new Particle_Rect(particleSize, -500, -500, getFireColor()));
         break;
       case Particle_Smoke:
-        addParticleToPool(new Particle_Smoke(particleSize, -500, -500, getFireColor()));
+        Particle_Smoke p = new Particle_Smoke(particleSize, -500, -500, getFireColor());
+        p.setVelocity(new PVector(random(-0.3f, 0.3f), random(1f, 5f)));
+        addParticleToPool(p);
         break;
       default:
         addParticleToPool(new Particle_Rect(particleSize, -500, -500, getFireColor()));
@@ -74,15 +77,12 @@ class ParticleSystem {
 
   void draw() {
     if (!isActive) return;
-
     BaseParticle part = tryGetParticleFromPool();
     if (part != null) {
       part.posX = this.posX;
       part.posY = this.posY;
-      float rndX = Helper.getRandomBetweenWithoutZero(minParticleVelocity, maxParticleVelocity);
-      float rndY = Helper.getRandomBetweenWithoutZero(minParticleVelocity, maxParticleVelocity);
-      PVector velocityRand = new PVector(rndX, rndY);
-      part.setVelocity(velocityRand);
+
+      updateParticleVelocity(part);
     }
 
     ArrayList<BaseParticle> addToPool = new ArrayList<BaseParticle>();
@@ -105,7 +105,7 @@ class ParticleSystem {
 
   void update() {
     timer += deltaTime;
-    if (timer >= this.duration) {
+    if (this.duration >= 0 && timer >= this.duration) {
       isActive = false;
     }
     for (BaseParticle p : particles) {
@@ -113,6 +113,32 @@ class ParticleSystem {
     }
   }
 
+  private void updateParticleVelocity(BaseParticle part) {
+    switch (activeParticleType) {
+    case Particle_Circle:
+      float rndX = Helper.getRandomBetweenWithoutZero(minParticleVelocity, maxParticleVelocity);
+      float rndY = Helper.getRandomBetweenWithoutZero(minParticleVelocity, maxParticleVelocity);
+      PVector velocityRand = new PVector(rndX, rndY);
+      part.setVelocity(velocityRand);
+      break;
+    case Particle_Rect:
+      rndX = Helper.getRandomBetweenWithoutZero(minParticleVelocity, maxParticleVelocity);
+      rndY = Helper.getRandomBetweenWithoutZero(minParticleVelocity, maxParticleVelocity);
+      velocityRand = new PVector(rndX, rndY);
+      part.setVelocity(velocityRand);
+      break;
+    case Particle_Smoke:
+      PVector vel = new PVector(random(-10f, 10f), random(-55f, -5f));
+      part.setVelocity(vel);
+      break;
+    default:
+      rndX = Helper.getRandomBetweenWithoutZero(minParticleVelocity, maxParticleVelocity);
+      rndY = Helper.getRandomBetweenWithoutZero(minParticleVelocity, maxParticleVelocity);
+      velocityRand = new PVector(rndX, rndY);
+      part.setVelocity(velocityRand);
+      break;
+    }
+  }
 
 
   // retrieve Particle from object pool and add to active particles

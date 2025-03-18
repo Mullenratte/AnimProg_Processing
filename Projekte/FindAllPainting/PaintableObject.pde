@@ -1,3 +1,5 @@
+import processing.sound.*;
+
 class PaintableObject implements Runnable {
   PImage currentImg;
   PImage imgPainted;
@@ -30,7 +32,8 @@ class PaintableObject implements Runnable {
   // time the thread is put to sleep each frame, in milliseconds;
   int threadSleepTime_ms = 5;
 
-
+  SoundFile[] onPaintedSFX;
+  boolean onPaintedSFXLooping;
 
 
   PaintableObject(int zIndex, Animator animator) {
@@ -38,7 +41,8 @@ class PaintableObject implements Runnable {
     this.imgPainted = animator.imgPainted;
     this.position = new PVector(0, 0);
     this.zIndex = zIndex;
-    smokePS = new ParticleSystem(smokeParticlePoolSize, 50, 3.5, false);
+    smokePS = new ParticleSystem(0, 50, 3.5, false);
+    smokePS.setActiveParticleType(ParticleType.Particle_Smoke);
     updateBoundingBox();
     this.animator = animator;
     if (animator != null && animator instanceof PhysicsAnimator) {
@@ -51,8 +55,7 @@ class PaintableObject implements Runnable {
 
     // time it takes to fully paint the object (seconds)
     smokePS.duration = Math.max(smokePSMinimalDuration, smokePSLingerFactor * boundingBoxHeight * threadSleepTime_ms / 1000f);
-    println(smokePS.duration);
-    SoundManager.Instance.PlaySoundOnce(SFX.PAINT);
+    SoundManager.Instance.PlaySoundOnce(SFX.PAINT, 0.8f);
     int milliseconds = 0;
     for (int y = (int)boundingBoxPosition.y; y < (int)boundingBoxPosition.y + boundingBoxHeight; y++) {
       for (int x = (int)boundingBoxPosition.x; x < (int)boundingBoxPosition.x + boundingBoxWidth; x++) {
@@ -66,7 +69,17 @@ class PaintableObject implements Runnable {
         println("Thread interrupted");
       }
     }
+    if (!isPainted) {
+      FindAllPainting.paintedObjects++;
+    }
     isPainted = true;
+    if (onPaintedSFX != null) {
+      if (onPaintedSFXLooping) {
+        SoundManager.Instance.AddSFXPlaylist(onPaintedSFX);
+      } else {
+        SoundManager.Instance.PlaySoundOnce(onPaintedSFX[0], 0.3f);
+      }
+    }
   }
 
 
@@ -89,16 +102,18 @@ class PaintableObject implements Runnable {
       image(currentImg, position.x, position.y);
     }
 
-    drawBoundingBox();
+    //if (mouseOver()) drawBoundingBox();
     smokePS.draw();
   }
 
   void update() {
-    if (mouseOver() && !Selector.paintedObjects.contains(this)) {
+    if (!isPainted && mouseOver() && !Selector.paintedObjects.contains(this)) {
       Selector.hoveredObjects.add(this);
     } else {
       Selector.hoveredObjects.remove(this);
     }
+
+
     smokePS.update();
   }
 
@@ -182,5 +197,10 @@ class PaintableObject implements Runnable {
 
   int getZIndex() {
     return zIndex;
+  }
+
+  void setOnPaintedSFX(SoundFile[] files, boolean isLooping) {
+    onPaintedSFX = files;
+    onPaintedSFXLooping = isLooping;
   }
 }

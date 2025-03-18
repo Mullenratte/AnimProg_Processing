@@ -21,7 +21,16 @@ class AffineAnimator extends Animator {
     isAnimating = true;
     while (isAnimating) {
       switch(currentAnimationType) {
-      case TRANSLATE:
+      case TRANSLATE_UP:
+        translate(new PVector(0f, -1f));
+        try {
+          Thread.sleep((long)(1000/pixelsPerSecond));
+        }
+        catch(InterruptedException e) {
+          println("Thread interrupted");
+        }
+        break;
+      case TRANSLATE_RIGHT:
         translate(new PVector(1f, 0f));
         try {
           Thread.sleep((long)(1000/pixelsPerSecond));
