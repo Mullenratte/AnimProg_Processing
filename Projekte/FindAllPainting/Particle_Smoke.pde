@@ -24,6 +24,8 @@ class Particle_Smoke extends BaseParticle {
   void draw() {
     pushStyle();
     imageMode(CENTER);
+    // slight transparency
+    tint(255, 150);
     image(selectedSprite, posX, posY);
 
     // debug

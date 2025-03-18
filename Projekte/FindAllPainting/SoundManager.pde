@@ -48,6 +48,11 @@ static class SoundManager {
   public void PlaySoundOnce(SoundFile file, float volume) {
     file.play(1f, volume);
   }
+  
+  public void PlayRandomSoundOnce(SoundFile[] fileSelection, float volume){
+    int i = (int)(Math.random() * fileSelection.length);
+    PlaySoundOnce(fileSelection[i], volume);
+  }
 
   public void PlayContinuously(SoundFile file, float volume) {
     file.loop(1f, volume);
@@ -63,7 +68,7 @@ static class SoundManager {
       if (!playlist[currentSongIndex].isPlaying()) {
         currentSongIndex = (sfxPlaylists.get(playlist) + 1) % playlist.length;
         sfxPlaylists.put(playlist, currentSongIndex);
-        playlist[currentSongIndex].play(0.5f);
+        playlist[currentSongIndex].play(1, 0.5f);
       }
     }
   }

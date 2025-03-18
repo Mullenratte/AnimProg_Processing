@@ -6,6 +6,7 @@ import processing.sound.*;
 // AUDIO
 
 SoundFile backgroundMusic;
+static SoundFile[] pencilSounds;
 SoundFile[] birdSounds;
 
 // ----------------------
@@ -54,7 +55,8 @@ void setup() {
   //SoundManager.Instance.StartPlaylist();
   SoundManager.Instance.StartPlaylistWithRandomSong();
 
-  SoundFile[] birdSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/birds");
+  pencilSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/pencil");
+  birdSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/birds");
 
   // ----- AUDIO END ------
 
@@ -126,9 +128,9 @@ void setup() {
 
       switch (zIndex) {
         // Wolken
-      case 1:
+      case 2:
         pObjects.add(new PaintableObject(zIndex, new AffineAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i], true, AffineAnimationType.TRANSLATE_RIGHT)));
-
+        break;
         // großer Baum links
       case 13:
         PaintableObject obj = new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i]));
@@ -142,7 +144,7 @@ void setup() {
         break;
         // Schornstein
       case 29:
-        ParticleSystem chimneySmokePS = new ParticleSystem(500, 25, -1);
+        ParticleSystem chimneySmokePS = new ParticleSystem(125, 40, -1);
         chimneySmokePS.setActiveParticleType(ParticleType.Particle_Smoke);
         PaintableObject chimneyObject = new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i]));
         PVector chimneyPosition = new PVector (chimneyObject.boundingBox.position.x + chimneyObject.boundingBox.boxWidth / 2, chimneyObject.boundingBox.position.y - 5);

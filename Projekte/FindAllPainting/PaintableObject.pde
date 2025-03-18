@@ -55,7 +55,7 @@ class PaintableObject implements Runnable {
 
     // time it takes to fully paint the object (seconds)
     smokePS.duration = Math.max(smokePSMinimalDuration, smokePSLingerFactor * boundingBoxHeight * threadSleepTime_ms / 1000f);
-    SoundManager.Instance.PlaySoundOnce(SFX.PAINT, 0.8f);
+    SoundManager.Instance.PlayRandomSoundOnce(FindAllPainting.pencilSounds, 0.8f);
     int milliseconds = 0;
     for (int y = (int)boundingBoxPosition.y; y < (int)boundingBoxPosition.y + boundingBoxHeight; y++) {
       for (int x = (int)boundingBoxPosition.x; x < (int)boundingBoxPosition.x + boundingBoxWidth; x++) {
