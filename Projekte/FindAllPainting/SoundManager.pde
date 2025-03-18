@@ -12,7 +12,7 @@ static class SoundManager {
   boolean playlistActive = false;
   int currentSongIndex = 0;
 
-  float musicVolume = 0.25f;
+  float musicVolume = 0.18f;
   float musicRate = 1f;
 
   private SoundManager() {

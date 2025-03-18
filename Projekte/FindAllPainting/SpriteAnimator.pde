@@ -10,6 +10,7 @@ class SpriteAnimator extends Animator {
   void animate() {
     do {
       for (int frame = 0; frame < spriteAnimation.length; frame++) {
+        println(frame);
         currentFrameImage = spriteAnimation[frame];
         try {
           //println("Frame: " + frame);

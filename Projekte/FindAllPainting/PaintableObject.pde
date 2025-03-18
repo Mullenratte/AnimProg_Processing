@@ -35,6 +35,7 @@ class PaintableObject implements Runnable {
 
   SoundFile[] onPaintedSFX;
   boolean onPaintedSFXLooping;
+  boolean playSFXWhenPainted = true;
 
   PaintableObject(int zIndex, Animator animator) {
     this.currentImg = animator.currentImg;
@@ -46,6 +47,7 @@ class PaintableObject implements Runnable {
     updateBoundingBox();
     this.animator = animator;
     if (animator != null && animator instanceof PhysicsAnimator) {
+      this.playSFXWhenPainted = false;
       animator.obj = this;
     }
   }
@@ -97,8 +99,7 @@ class PaintableObject implements Runnable {
       image(currentImg, position.x, position.y);
     }
 
-    if (mouseOver()) drawBoundingBox();
-    smokePS.draw();
+    //if (mouseOver()) drawBoundingBox();
   }
 
   void update() {
@@ -133,11 +134,11 @@ class PaintableObject implements Runnable {
 
 
   void tryPlayOnPaintedSFX() {
-    if (onPaintedSFX != null) {
+    if (onPaintedSFX != null && playSFXWhenPainted || onPaintedSFX != null && this.animator instanceof PhysicsAnimator) {
       if (onPaintedSFXLooping) {
         SoundManager.Instance.AddSFXPlaylist(onPaintedSFX);
       } else {
-        SoundManager.Instance.PlaySoundOnce(onPaintedSFX[0], 0.3f);
+        SoundManager.Instance.PlayRandomSoundOnce(onPaintedSFX, 0.5f);
       }
     }
   }

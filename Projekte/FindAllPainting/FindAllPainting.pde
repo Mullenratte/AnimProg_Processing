@@ -9,6 +9,11 @@ SoundFile backgroundMusic;
 static SoundFile[] pencilSounds;
 SoundFile[] birdSounds;
 SoundFile[] leafSounds;
+SoundFile[] ballSounds;
+SoundFile[] doorSounds;
+SoundFile easterEgg_hauab;
+
+SoundFile gameFinishedSound;
 
 // ----------------------
 
@@ -17,7 +22,6 @@ int globalRescaleFactor = 1;
 
 PGraphics imageFrame;
 
-PImage sheetPainted, animations;
 ArrayList<PImage[]> sheetSliced, sheetPaintedSliced, animationsSliced;
 SpritesheetSlicer slicer;
 
@@ -25,8 +29,9 @@ ArrayList<PaintableObject> pObjects = new ArrayList<PaintableObject>();
 PaintableObject testObject;
 PaintableObject testObject2;
 
-PImage egg, eggFilled;
-
+PImage characterWalk;
+ArrayList<PImage[]> characterWalkSliced = new ArrayList<PImage[]>();
+Character character;
 
 Helper Helper = new Helper();
 
@@ -50,6 +55,8 @@ static boolean wholeImagePainted;
 
 PGraphics pg;
 
+
+
 void setup() {
   frameRate(60);
   size(1280, 905);
@@ -71,6 +78,10 @@ void setup() {
   pencilSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/pencil");
   birdSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/birds");
   leafSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/leaves");
+  ballSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/ball");
+  doorSounds = Helper.loadSoundFilesFromDirectory(this, "./Audio/door");
+  easterEgg_hauab = new SoundFile(this, "./Audio/hauab.wav");
+  gameFinishedSound = new SoundFile(this, "./Audio/LevelUp3.mp3");
   // ----- AUDIO END ------
 
   // ----- LOAD IMAGES ------
@@ -92,7 +103,16 @@ void setup() {
   for (int i = 0; i < pencilAnimSheetSliced.get(0).length; i++) {
     pencilAnimSheetSliced.get(0)[i].resize(1280 / 4, 905 / 4);
   }
+
   pencilAnim = new SpriteAnimator(new PVector(mouseX, mouseY), pencilAnimSheetSliced.get(0)[0], pencilAnimSheetSliced.get(0)[0], pencilAnimSheetSliced.get(0));
+
+  characterWalk = loadImage("./CharacterAnimations/Walk.png");
+  slicer = new SpritesheetSlicer(characterWalk, 512, 512);
+  characterWalkSliced = slicer.GetSlicedRows();
+  for (int i = 0; i < characterWalkSliced.get(0).length; i++) {
+    characterWalkSliced.get(0)[i].resize(512 / 3, 512 / 3);
+  }
+
 
   // house
   File directory = new File(dataPath("./Weiss"));
@@ -126,9 +146,18 @@ void setup() {
         pObjects.add(obj);
 
         break;
+        // Tür
+      case 24:
+        obj = new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i]));
+        obj.setOnPaintedSFX(doorSounds, false);
+        pObjects.add(obj);
+        break;
         // Ball auf Dach
       case 28:
-        pObjects.add(new PaintableObject(zIndex, new PhysicsAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i], true, PhysicsAnimationType.BOUNCE, false)));
+        obj = new PaintableObject(zIndex, new PhysicsAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i], true, PhysicsAnimationType.BOUNCE, false));
+        obj.setOnPaintedSFX(ballSounds, false);
+        pObjects.add(obj);
+
         break;
         // Schornstein
       case 29:
@@ -141,6 +170,7 @@ void setup() {
         chimneyObject.setOnPaintedSFX(new SoundFile[]{new SoundFile(this, "./Audio/Chimney.wav")}, true);
         pObjects.add(chimneyObject);
         break;
+        // Brunnen
       case 31:
         obj = new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i]));
         obj.setOnPaintedSFX(new SoundFile[]{new SoundFile(this, "./Audio/well/drop.wav")}, false);
@@ -148,23 +178,22 @@ void setup() {
         break;
       default:
         // leaves
-        //if (zIndex != 7 && zIndex >= 5 && zIndex <= 18) {
-        //  obj = new PaintableObject(zIndex, new PhysicsAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i], true, PhysicsAnimationType.SWAY, true));
-        //  obj.setOnPaintedSFX(leafSounds, false);
-        //  pObjects.add(obj);
-        //} else {
-        //  pObjects.add(new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i])));
-        //}
-        pObjects.add(new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i])));
+        if (zIndex != 7 && zIndex >= 5 && zIndex <= 18) {
+          obj = new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i]));
+          obj.setOnPaintedSFX(leafSounds, false);
+          pObjects.add(obj);
+        } else {
+          pObjects.add(new PaintableObject(zIndex, new StaticAnimator(new PVector(0, 0), unfilledImages[i], filledImages[i])));
+        }
       }
     }
   }
 
-
-
   // sort all pObjects based on z Index (after that, ArrayList starts with lowest zIndex)
   pObjects.sort(Comparator.comparingInt(PaintableObject::getZIndex));
   paintableObjectsTotal = pObjects.size();
+
+  character = new Character(new PVector(-25, 430), new PVector(1f, 0f), 30f, characterWalkSliced.get(0));
 
   //debug
   //for (PaintableObject o : pObjects) {
@@ -183,14 +212,25 @@ void draw() {
   gameTime += deltaTime;
 
 
-  if (paintedObjects >= paintableObjectsTotal) {
+  if (!wholeImagePainted && paintedObjects >= paintableObjectsTotal) {
     wholeImagePainted = true;
     backgroundObj.startPaintCoroutine();
+    SoundManager.Instance.PlaySoundOnce(gameFinishedSound, 0.8f);
   }
 
   for (PaintableObject obj : pObjects) {
+    if (obj.zIndex == 7 && !character.reachedFirstWP) {
+      // character
+      character.update(deltaTime);
+      character.draw(deltaTime);
+    }
     obj.update();
     obj.draw();
+  }
+
+  if (character.reachedFirstWP) {
+    character.update(deltaTime);
+    character.draw(deltaTime);
   }
 
 
@@ -218,6 +258,7 @@ void mousePressed() {
 void keyPressed() {
 }
 
+int clickedDoorAmounts = 0;
 void tryPaintForegroundObject() {
   PaintableObject highestZObj = null;
   int highestZ = -1;
@@ -235,8 +276,16 @@ void tryPaintForegroundObject() {
     }
 
     if (wholeImagePainted) {
-      println(highestZObj.zIndex);
       highestZObj.tryPlayOnPaintedSFX();
+    }
+
+    // check for door
+    if (highestZObj.zIndex == 24) {
+      clickedDoorAmounts++;
+      if (clickedDoorAmounts > 10) {
+        SoundManager.Instance.PlaySoundOnce(easterEgg_hauab, 1f);
+        clickedDoorAmounts = 0;
+      }
     }
   }
 }

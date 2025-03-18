@@ -60,8 +60,16 @@ class PhysicsAnimator extends Animator {
     }
   }
 
+  int bounceDir = 1; // 1 = down, -1 = up
   void bounce(float progress) {
     position.y = map(easeOutBounce(progress), 0.0, 1.0, (float)startPos.y, (float)endPos.y);
+    float nextStepY = map(easeOutBounce(progress + 0.01f), 0.0, 1.0, (float)startPos.y, (float)endPos.y);
+    if (nextStepY - position.y < 0 && bounceDir == 1) {
+      obj.tryPlayOnPaintedSFX();
+      bounceDir = -1;
+    } else if (nextStepY - position.y >= 0 && bounceDir == -1){
+      bounceDir = 1;
+    }
 
     currentFrameImage = currentImg;
   }
