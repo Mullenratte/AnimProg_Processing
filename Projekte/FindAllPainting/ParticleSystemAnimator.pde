@@ -14,14 +14,13 @@ class ParticleSystemAnimator extends Animator {
     this.particleSys = ps;
   }
 
-// Animator.draw() needs to be overwritten, because image(currentFrameImage, posX, posY) needs to be drawn at (0,0), not at the PS's position
+  // Animator.draw() needs to be overwritten, because image(currentFrameImage, posX, posY) needs to be drawn at (0,0), not at the PS's position
   void draw() {
     if (isAnimating) {
       particleSys.update();
       particleSys.draw();
-      currentFrameImage = currentImg;
     }
-    
+    currentFrameImage = currentImg;
     image(currentFrameImage, 0, 0);
   }
 
