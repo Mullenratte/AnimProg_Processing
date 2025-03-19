@@ -50,6 +50,8 @@ class PaintableObject implements Runnable {
       this.playSFXWhenPainted = false;
       animator.obj = this;
     }
+
+    currentImg.loadPixels();
   }
 
   void run() {
@@ -76,6 +78,7 @@ class PaintableObject implements Runnable {
     }
     isPainted = true;
     canSelect = false;
+    currentImg.loadPixels();
     tryPlayOnPaintedSFX();
   }
 

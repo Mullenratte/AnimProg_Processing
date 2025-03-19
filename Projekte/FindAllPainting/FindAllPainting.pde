@@ -55,6 +55,7 @@ static boolean wholeImagePainted;
 
 PGraphics pg;
 
+PFont font;
 
 
 void setup() {
@@ -62,6 +63,7 @@ void setup() {
   size(1280, 905);
   noCursor();
 
+  font = createFont("Vivaldi Italic", 50);
 
   // ----- AUDIO ------
   // construct Singleton
@@ -199,7 +201,15 @@ void setup() {
   //for (PaintableObject o : pObjects) {
   //  o.startPaintCoroutine();
   //}
+
+  mouseX = 0;
+  mouseY = 0;
 }
+
+float tutorialDuration = 30;
+float tutorialTime = 0;
+boolean showTutorial = true;
+
 
 void draw() {
   background(255);
@@ -237,6 +247,11 @@ void draw() {
 
   image(imageFrame, 0, 0);
 
+  if (showTutorial) {
+    handleTutorialScreen();
+  }
+
+
   if (pencilActive) {
     pencil_currentAnimFrame += deltaTime * animFPS;
     if (pencil_currentAnimFrame >= pencilAnimSheetSliced.get(0).length) {
@@ -250,9 +265,34 @@ void draw() {
   }
 }
 
+void handleTutorialScreen() {
+  tutorialTime += deltaTime;
+
+  if (tutorialTime > tutorialDuration) {
+    showTutorial = false;
+  }
+  pushStyle();
+  tint(0, 233);
+  image(backgroundObj.currentImg, 0, 0);
+  textSize(50);
+  textAlign(CENTER);
+  fill(225, 136, 46);
+  //String[] fonts = PFont.list();
+  //printArray(fonts);
+  textFont(font);
+  text("Paint objects by clicking them. \n Some objects add animation or sound when painted!", width/2, height/2);
+  textSize(28);
+  fill(233);
+  text("Click to continue", width/2, height/2 + 225);
+  popStyle();
+}
 
 void mousePressed() {
-  tryPaintForegroundObject();
+  if (showTutorial) {
+    showTutorial = false;
+  } else {
+    tryPaintForegroundObject();
+  }
 }
 
 void keyPressed() {
@@ -282,7 +322,7 @@ void tryPaintForegroundObject() {
     // check for door
     if (highestZObj.zIndex == 24) {
       clickedDoorAmounts++;
-      if (clickedDoorAmounts > 10) {
+      if (clickedDoorAmounts > 5) {
         SoundManager.Instance.PlaySoundOnce(easterEgg_hauab, 1f);
         clickedDoorAmounts = 0;
       }

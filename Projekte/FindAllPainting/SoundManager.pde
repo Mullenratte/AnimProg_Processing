@@ -81,8 +81,9 @@ static class SoundManager {
   }
 
   public void StartPlaylistWithRandomSong() {
-    backgroundMusicPlaylist.get((int)(Math.random() * backgroundMusicPlaylist.size())).play(musicRate, musicVolume);
-    playlistActive = true;
+    
+    currentSongIndex = (int)(Math.random() * backgroundMusicPlaylist.size());
+    StartPlaylist();
   }
 
   private void HandleNextSong() {
